@@ -1,5 +1,5 @@
 - Feature Name: handle_ca_alternatives
-- Start Date: 2016-07-10)
+- Start Date: 2016-07-10
 - RFC PR:
 - Issue:
 
@@ -33,9 +33,13 @@ First we will modify puppet CA server to support Foreman as an [external policy 
 Next we will add a special controller that will respond to those requests, check for authenticity of the CSR and
 return a result that could be parsed by the script.
 
-\[Optional\]
-We can add information to a node that will be passed as part of the CSR, for example we can use a one-time password that
-will be invalidated upon first CSR validation. This will ensure that each host is registered at most once.
+We will add information to a node that will be passed as part of the CSR.
+The information would be a one-time password set on a Host object and will be invalidated upon first
+CSR validation. This will ensure that each host is registered at most once.
+In order to implement this, we will add the password as part of the PXE template in case of bare metals hosts,
+in the finish template in case of user-data VM's and in the SSH template in case of SSH based provisioning.
+After the password is delivered to the host, we can configure puppet agent to [add it to the CSR](https://docs.puppet.com/puppet/latest/reference/ssl_attributes_extensions.html#aws-attributes-and-extensions-population-example)
+
 
 # Drawbacks
 [drawbacks]: #drawbacks
@@ -45,10 +49,9 @@ This feature is supported in puppet stating from v3.4. If we want to support old
 # Alternatives
 [alternatives]: #alternatives
 
-We can use [extensible template provisioning](https://github.com/theforeman/rfcs/pull/6) if we want puppet plugin to
+1. We can use [extensible template provisioning](https://github.com/theforeman/rfcs/pull/6) if we want puppet plugin to
 generate a certificate upon finish template generation.
+2. We can use the model used in salt to open the autosign window on changes in the [build flag](https://github.com/theforeman/foreman_salt/blob/master/app/models/foreman_salt/concerns/host_managed_extensions.rb#L24-L26).
 
 # Unresolved questions
 [unresolved]: #unresolved-questions
-
-What exactly should be the payload that will enable us to trust the CSR.
